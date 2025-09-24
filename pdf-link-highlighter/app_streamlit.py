@@ -44,8 +44,17 @@ def sidebar_controls():
         "PDFファイルをアップロード",
         type=['pdf'],
         accept_multiple_files=True,
-        help="処理するPDFファイルを1つまたは複数選択してください"
+        help="処理するPDFファイルを1つまたは複数選択してください（最大50MB）"
     )
+
+    # Check file sizes
+    if uploaded_files:
+        for file in uploaded_files:
+            file_size_mb = len(file.getvalue()) / (1024 * 1024)
+            if file_size_mb > 50:
+                st.sidebar.error(f"❌ {file.name}: ファイルサイズが大きすぎます ({file_size_mb:.1f}MB > 50MB)")
+                uploaded_files = None
+                break
 
     st.sidebar.divider()
 
