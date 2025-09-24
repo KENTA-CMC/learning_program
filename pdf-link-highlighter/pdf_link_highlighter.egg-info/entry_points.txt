@@ -1,0 +1,2 @@
+[console_scripts]
+highlight-links = highlight_links:main

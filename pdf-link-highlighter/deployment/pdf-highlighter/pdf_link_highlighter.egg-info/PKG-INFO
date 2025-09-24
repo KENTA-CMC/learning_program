@@ -1,0 +1,291 @@
+Metadata-Version: 2.4
+Name: pdf-link-highlighter
+Version: 0.1.0
+Summary: Automatically highlight link areas in PDF files
+Author-email: Claude Code <noreply@anthropic.com>
+License: MIT
+Requires-Python: >=3.11
+Description-Content-Type: text/markdown
+Requires-Dist: pymupdf>=1.23.0
+Requires-Dist: streamlit>=1.28.0
+Requires-Dist: pdf2image>=1.16.0
+Provides-Extra: dev
+Requires-Dist: pytest>=7.4.0; extra == "dev"
+Requires-Dist: pytest-cov>=4.1.0; extra == "dev"
+
+# PDF Link Highlighter
+
+Automatically highlight link areas in PDF files with yellow semi-transparent overlays.
+
+## Overview
+
+This application automatically detects link annotations (external URLs, internal page jumps, email links, etc.) in PDF files and adds yellow semi-transparent highlights over them for improved visibility. The original PDF layout and functionality remain unchanged.
+
+## Features
+
+- **Automatic Link Detection**: Finds all `/Annots` with `Subtype /Link` in PDF files
+- **Multiple Link Types**: Supports external URLs, internal page navigation, mailto, tel links
+- **Visual Highlighting**: Adds yellow semi-transparent overlays (customizable color and opacity)
+- **Batch Processing**: Process multiple PDF files at once
+- **CLI and GUI**: Command-line interface and web-based Streamlit UI
+- **Password Support**: Works with encrypted PDFs
+- **Smart Filtering**: Excludes tiny links (configurable minimum size)
+- **Safe Processing**: Original links remain clickable, no content modification
+
+## Installation
+
+### Requirements
+- Python 3.11+
+- PyMuPDF (fitz)
+- Streamlit (for GUI)
+- pdf2image (optional, for preview)
+
+### Setup with uv (recommended)
+
+```bash
+# Clone or download the project
+cd pdf-link-highlighter
+
+# Install dependencies
+uv add pymupdf streamlit pdf2image
+
+# For Codespaces with preview support
+sudo apt-get update && sudo apt-get install -y poppler-utils
+```
+
+### Setup with pip
+
+```bash
+pip install pymupdf streamlit pdf2image
+```
+
+## Usage
+
+### Command Line Interface
+
+#### Basic Usage
+```bash
+# Process a single PDF
+python highlight_links.py --input document.pdf
+
+# Specify output location
+python highlight_links.py --input doc.pdf --output highlighted.pdf
+
+# Batch process all PDFs in a directory
+python highlight_links.py --batch ./pdf-files/
+```
+
+#### Advanced Options
+```bash
+# Custom color and opacity
+python highlight_links.py --input doc.pdf --color "#00FF00" --opacity 0.5
+
+# Different highlighting modes
+python highlight_links.py --input doc.pdf --mode annot
+
+# Password-protected PDFs
+python highlight_links.py --input encrypted.pdf --password mypassword
+
+# Generate processing report
+python highlight_links.py --batch ./pdfs --report-json report.json
+
+# Filter small links
+python highlight_links.py --input doc.pdf --min-side 5.0
+```
+
+#### CLI Options
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `--input, -i` | Input PDF path | Required* |
+| `--output, -o` | Output PDF path | `<input>_hl.pdf` |
+| `--batch, -b` | Directory for batch processing | - |
+| `--color, -c` | Highlight color (`#RRGGBB` or `r,g,b`) | `1,1,0` (yellow) |
+| `--opacity` | Transparency (0.0-1.0) | `0.35` |
+| `--mode` | `draw` or `annot` | `draw` |
+| `--min-side` | Min link size in points | `2.0` |
+| `--password, -p` | PDF password | - |
+| `--overwrite` | Overwrite existing output | `False` |
+| `--report-json` | Save processing report | - |
+| `--verbose, -v` | Detailed logging | `False` |
+
+*Required unless using `--batch`
+
+### Streamlit Web Interface
+
+Start the web interface:
+
+```bash
+streamlit run app_streamlit.py
+```
+
+Then open your browser to the displayed URL (typically `http://localhost:8501`).
+
+#### Web Interface Features
+
+- **File Upload**: Drag and drop multiple PDF files
+- **Visual Configuration**: Color picker and sliders for settings
+- **Real-time Preview**: See first page preview (when pdf2image is available)
+- **Batch Processing**: Handle multiple files simultaneously
+- **Download Results**: Direct download of highlighted PDFs
+- **Processing Logs**: View detailed processing information
+
+## How It Works
+
+### Link Detection Process
+
+1. **Open PDF**: Use PyMuPDF to load the document
+2. **Scan Pages**: Iterate through all pages
+3. **Extract Links**: Use `page.get_links()` to find all link annotations
+4. **Classify Links**: Determine link types (URI, page, named, file, etc.)
+5. **Filter Links**: Remove links smaller than minimum size threshold
+
+### Highlighting Process
+
+1. **Rectangle Drawing** (default mode):
+   - Uses `page.draw_rect()` with semi-transparent fill
+   - Most compatible across PDF viewers
+   - Preserves original link functionality
+
+2. **Annotation Mode** (alternative):
+   - Adds actual PDF annotations with `page.add_rect_annot()`
+   - May render differently in different viewers
+
+### Link Types Supported
+
+- **External URLs**: `http://`, `https://`, `ftp://`
+- **Email Links**: `mailto:` addresses
+- **Phone Numbers**: `tel:` links
+- **Internal Navigation**: Page jumps, bookmarks
+- **File Links**: References to other documents
+- **Named Destinations**: PDF internal bookmarks
+
+## Configuration
+
+### Color Formats
+
+- **Hex**: `#FFFF00` (yellow), `#FF0000` (red)
+- **RGB**: `1,1,0` (yellow), `1,0,0` (red)
+- **Values**: 0.0-1.0 range for RGB components
+
+### Recommended Settings
+
+- **General Use**: `--color "#FFFF00" --opacity 0.35 --mode draw`
+- **High Contrast**: `--opacity 0.5`
+- **Subtle Highlighting**: `--opacity 0.2`
+- **No Small Links**: `--min-side 5.0`
+
+## Examples
+
+### Example 1: Basic Processing
+```bash
+python highlight_links.py --input research-paper.pdf
+# Output: research-paper_hl.pdf with yellow highlights
+```
+
+### Example 2: Custom Appearance
+```bash
+python highlight_links.py --input document.pdf --color "#00FFFF" --opacity 0.4
+# Creates cyan highlights at 40% opacity
+```
+
+### Example 3: Batch Processing with Report
+```bash
+python highlight_links.py --batch ./documents/ --report-json processing-report.json
+# Processes all PDFs in documents/ directory and saves detailed report
+```
+
+## Testing
+
+Run the test suite:
+
+```bash
+# Install test dependencies
+uv add pytest pytest-cov
+
+# Run tests
+pytest tests/
+
+# Run with coverage
+pytest tests/ --cov=core --cov-report=html
+```
+
+## Project Structure
+
+```
+pdf-link-highlighter/
+├── README.md                 # This file
+├── pyproject.toml           # Project configuration and dependencies
+├── highlight_links.py       # CLI interface
+├── app_streamlit.py        # Streamlit web UI
+├── core/                   # Core functionality
+│   ├── __init__.py
+│   ├── annot_model.py      # Data models for link annotations
+│   ├── detector.py         # Link detection logic
+│   ├── painter.py          # Highlight rendering
+│   └── io_utils.py         # File I/O and batch processing
+├── tests/                  # Test suite
+│   ├── __init__.py
+│   ├── test_detector.py
+│   ├── test_painter.py
+│   └── assets/            # Test PDF files
+└── examples/
+    └── sample.pdf         # Sample PDF for testing
+```
+
+## Troubleshooting
+
+### Common Issues
+
+**"No links found"**
+- PDF may not have clickable link annotations
+- Links might be plain text (not annotated)
+- Check with `--verbose` for detailed logging
+
+**"Password required"**
+- Use `--password` option for encrypted PDFs
+- Ensure password is correct
+
+**"Permission denied"**
+- Check file permissions
+- Use `--overwrite` if output file exists
+
+**"Invalid PDF"**
+- Ensure file is a valid PDF
+- Try opening in a PDF viewer first
+
+**Import errors**
+- Install dependencies: `uv add pymupdf streamlit`
+- For Codespaces: `sudo apt-get install poppler-utils`
+
+### Performance Tips
+
+- **Large files**: Process individually rather than in large batches
+- **Memory usage**: Close documents when done (handled automatically)
+- **Speed**: Use `draw` mode instead of `annot` mode
+
+## Limitations
+
+1. **Text Links**: Only detects actual PDF link annotations, not plain text URLs
+2. **Complex Shapes**: Rectangular highlights only (may not perfectly match complex link areas)
+3. **Viewer Dependency**: Annotation mode appearance varies by PDF viewer
+4. **File Size**: Highlighted PDFs will be slightly larger than originals
+
+## License
+
+MIT License - see LICENSE file for details.
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Add tests for new functionality
+4. Ensure all tests pass
+5. Submit a pull request
+
+## Support
+
+For issues and questions:
+- Check the troubleshooting section above
+- Review test files for usage examples
+- Open an issue with detailed error information

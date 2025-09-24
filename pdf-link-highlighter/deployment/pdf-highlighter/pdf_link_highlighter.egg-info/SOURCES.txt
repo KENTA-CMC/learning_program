@@ -1,0 +1,15 @@
+README.md
+pyproject.toml
+core/__init__.py
+core/annot_model.py
+core/detector.py
+core/io_utils.py
+core/painter.py
+pdf_link_highlighter.egg-info/PKG-INFO
+pdf_link_highlighter.egg-info/SOURCES.txt
+pdf_link_highlighter.egg-info/dependency_links.txt
+pdf_link_highlighter.egg-info/entry_points.txt
+pdf_link_highlighter.egg-info/requires.txt
+pdf_link_highlighter.egg-info/top_level.txt
+tests/test_detector.py
+tests/test_painter.py
