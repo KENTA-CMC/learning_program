@@ -1,0 +1,7 @@
+# Large build files
+pdf-link-highlighter/deployment/pdf-highlighter/build/app_streamlit/PDF_Link_Highlighter.pkg
+pdf-link-highlighter/deployment/pdf-highlighter/dist/PDF_Link_Highlighter
+
+# Build directories
+pdf-link-highlighter/deployment/pdf-highlighter/build/
+pdf-link-highlighter/deployment/pdf-highlighter/dist/
