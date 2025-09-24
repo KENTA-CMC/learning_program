@@ -5,7 +5,3 @@ build:
   runtime: python3.11
   package_manager: uv
   entrypoint: pdf-link-highlighter/app_streamlit.py
-  args:
-    - "--server.enableCORS=false"
-    - "--server.enableXsrfProtection=false"
-    - "--server.maxUploadSize=50"
