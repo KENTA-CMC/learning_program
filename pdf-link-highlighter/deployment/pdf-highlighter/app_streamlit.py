@@ -44,8 +44,17 @@ def sidebar_controls():
         "PDFファイルをアップロード",
         type=['pdf'],
         accept_multiple_files=True,
-        help="処理するPDFファイルを1つまたは複数選択してください"
+        help="処理するPDFファイルを1つまたは複数選択してください（最大50MB）"
     )
+
+    # Check file sizes
+    if uploaded_files:
+        for file in uploaded_files:
+            file_size_mb = len(file.getvalue()) / (1024 * 1024)
+            if file_size_mb > 50:
+                st.sidebar.error(f"❌ {file.name}: ファイルサイズが大きすぎます ({file_size_mb:.1f}MB > 50MB)")
+                uploaded_files = None
+                break
 
     st.sidebar.divider()
 
@@ -309,8 +318,7 @@ def main():
     # Show uploaded files info
     st.subheader(f"📁 アップロードされたファイル ({len(config['uploaded_files'])})")
     for file in config['uploaded_files']:
-        file_size = len(file.read())
-        file.seek(0)  # Reset file pointer
+        file_size = len(file.getvalue())
         st.write(f"- **{file.name}** ({file_size:,} バイト)")
 
     # Processing
@@ -344,8 +352,7 @@ def process_files(config: dict):
 
         try:
             # Read file data
-            file_data = uploaded_file.read()
-            uploaded_file.seek(0)  # Reset for potential reuse
+            file_data = uploaded_file.getvalue()
 
             # Process PDF
             with st.status(f"{filename}を処理中...", expanded=True):
