@@ -4,4 +4,4 @@ build:
   framework: streamlit
   runtime: python3.11
   package_manager: uv
-  entrypoint: pdf-link-highlighter/app_streamlit.py
+  entrypoint: pdf-link-highlighter/deployment/pdf-highlighter/app_streamlit.py
